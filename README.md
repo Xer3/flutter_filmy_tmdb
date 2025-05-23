@@ -1,16 +1,34 @@
-# app_filmy
+# 🎬 Filmy TMDB – Flutter App
 
-A new Flutter project.
+Aplikacja mobilna stworzona w Flutterze, która pobiera i prezentuje popularne filmy z The Movie Database (TMDB API).
 
-## Getting Started
+## 📱 Funkcje:
 
-This project is a starting point for a Flutter application.
+- Pobieranie danych z zewnętrznego API (TMDB)
+- Lista i siatka filmów z przełącznikiem widoku (`setState`)
+- `FutureBuilder` do asynchronicznego ładowania danych
+- Ekran szczegółów filmu z animacją przejścia (`Hero`)
+- Fade-in obrazów z placeholderem ładowania
+- Ekran informacyjny „O aplikacji”
+- Działa zarówno na Androidzie, jak i emulatorze webowym
 
-A few resources to get you started if this is your first Flutter project:
+## 🔧 Technologie
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Flutter 3.x
+- Dart
+- TMDB API
+- Material Design 3
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🧠 Cel projektu
+
+Projekt zaliczeniowy na studia (Flutter + API + animacje + wieloekranowa aplikacja).  
+Zamierzam go rozwijać dalej — dodając np. filtrowanie gatunków, ulubione filmy i lokalne przechowywanie danych.
+
+## 📸 Zrzuty ekranu (do dodania)
+
+*W przyszłości uzupełnię screeny z aplikacji.*
+
+---
+
+Zrobione przez [Xer3](https://github.com/Xer3)  
+Email: hzer4321@gmail.com
