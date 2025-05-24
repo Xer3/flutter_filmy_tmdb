@@ -30,5 +30,5 @@ Zamierzam go rozwijać dalej — dodając np. filtrowanie gatunków, ulubione fi
 
 ---
 
-Zrobione przez [Xer3](https://github.com/Xer3)  
+Zrobione przez [Dawid Bodzęta](https://github.com/Xer3)  
 Email: hzer4321@gmail.com
