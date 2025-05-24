@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'api.dart';
 import 'movie_details.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  final bool isDarkMode;
+  final Function(bool) onThemeChanged;
+
+  const HomeScreen({required this.isDarkMode, required this.onThemeChanged});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -13,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Popularne filmy'),
         actions: [
@@ -25,9 +32,18 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           IconButton(
-            icon: Icon(Icons.info_outline),
+            icon: Icon(Icons.settings),
             onPressed: () {
-              Navigator.pushNamed(context, '/about');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (_) => SettingsScreen(
+                        isDarkMode: widget.isDarkMode,
+                        onThemeChanged: widget.onThemeChanged,
+                      ),
+                ),
+              );
             },
           ),
         ],

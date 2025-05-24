@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class Movie {
+  final int id;
   final String title;
   final String overview;
   final String posterPath;
 
   Movie({
+    required this.id,
     required this.title,
     required this.overview,
     required this.posterPath,
@@ -14,6 +16,7 @@ class Movie {
 
   factory Movie.fromJson(Map<String, dynamic> json) {
     return Movie(
+      id: json['id'] ?? 0,
       title: json['title'] ?? '',
       overview: json['overview'] ?? '',
       posterPath: json['poster_path'] ?? '',
