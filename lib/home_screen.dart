@@ -6,8 +6,13 @@ import 'settings_screen.dart';
 class HomeScreen extends StatefulWidget {
   final bool isDarkMode;
   final Function(bool) onThemeChanged;
+  final String category;
 
-  const HomeScreen({required this.isDarkMode, required this.onThemeChanged});
+  const HomeScreen({
+    required this.isDarkMode,
+    required this.onThemeChanged,
+    required this.category,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -15,13 +20,50 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool isGrid = false;
+  List<Movie> allMovies = [];
+  List<Movie> filteredMovies = [];
+  String searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMovies();
+  }
+
+  void _loadMovies() async {
+    final movies = await fetchMoviesByCategory(widget.category);
+    setState(() {
+      allMovies = movies;
+      filteredMovies = movies;
+    });
+  }
+
+  void _filterMovies(String query) {
+    setState(() {
+      searchQuery = query;
+      filteredMovies =
+          allMovies
+              .where(
+                (movie) =>
+                    movie.title.toLowerCase().contains(query.toLowerCase()),
+              )
+              .toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Popularne filmy'),
+        leading:
+            Navigator.canPop(context)
+                ? IconButton(
+                  icon: Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
+                )
+                : null,
+        title: Text('Filmy'),
         actions: [
           IconButton(
             icon: Icon(isGrid ? Icons.list : Icons.grid_view),
@@ -48,108 +90,118 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<List<Movie>>(
-        future: fetchPopularMovies(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Błąd: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('Brak wyników'));
-          }
-
-          final movies = snapshot.data!;
-
-          if (isGrid) {
-            return GridView.builder(
-              padding: EdgeInsets.all(10),
-              itemCount: movies.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.6,
-              ),
-              itemBuilder: (context, index) {
-                final movie = movies[index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MovieDetailsPage(movie: movie),
+      body:
+          allMovies.isEmpty
+              ? Center(child: CircularProgressIndicator())
+              : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Szukaj filmu...',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    );
-                  },
-                  child: Card(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: Hero(
-                            tag: movie.title,
-                            child:
-                                movie.posterPath.isNotEmpty
-                                    ? FadeInImage.assetNetwork(
-                                      placeholder: 'assets/loading.gif',
-                                      image:
-                                          'https://image.tmdb.org/t/p/w342${movie.posterPath}',
-                                      fit: BoxFit.cover,
-                                    )
-                                    : Icon(Icons.movie, size: 100),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            movie.title,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+                      onChanged: _filterMovies,
                     ),
                   ),
-                );
-              },
-            );
-          } else {
-            return ListView.builder(
-              itemCount: movies.length,
-              itemBuilder: (context, index) {
-                final movie = movies[index];
-                return ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MovieDetailsPage(movie: movie),
-                      ),
-                    );
-                  },
-                  leading: Hero(
-                    tag: movie.title,
+                  Expanded(
                     child:
-                        movie.posterPath.isNotEmpty
-                            ? FadeInImage.assetNetwork(
-                              placeholder: 'assets/loading.gif',
-                              image:
-                                  'https://image.tmdb.org/t/p/w92${movie.posterPath}',
-                              fit: BoxFit.cover,
+                        isGrid
+                            ? GridView.builder(
+                              padding: EdgeInsets.all(10),
+                              itemCount: filteredMovies.length,
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    childAspectRatio: 0.6,
+                                  ),
+                              itemBuilder: (context, index) {
+                                final movie = filteredMovies[index];
+                                return _buildMovieCard(movie);
+                              },
                             )
-                            : Icon(Icons.movie),
+                            : ListView.builder(
+                              itemCount: filteredMovies.length,
+                              itemBuilder: (context, index) {
+                                final movie = filteredMovies[index];
+                                return _buildMovieTile(movie);
+                              },
+                            ),
                   ),
-                  title: Text(movie.title),
-                  subtitle: Text(
-                    movie.overview,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                );
-              },
-            );
-          }
-        },
+                ],
+              ),
+    );
+  }
+
+  Widget _buildMovieTile(Movie movie) {
+    return ListTile(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => MovieDetailsPage(movie: movie)),
+        );
+      },
+      leading: Hero(
+        tag: movie.title,
+        child:
+            movie.posterPath.isNotEmpty
+                ? FadeInImage.assetNetwork(
+                  placeholder: 'assets/loading.gif',
+                  image: 'https://image.tmdb.org/t/p/w92${movie.posterPath}',
+                  fit: BoxFit.cover,
+                )
+                : Icon(Icons.movie),
+      ),
+      title: Text(movie.title),
+      subtitle: Text(
+        movie.overview,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  Widget _buildMovieCard(Movie movie) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => MovieDetailsPage(movie: movie)),
+        );
+      },
+      child: Card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Hero(
+                tag: movie.title,
+                child:
+                    movie.posterPath.isNotEmpty
+                        ? FadeInImage.assetNetwork(
+                          placeholder: 'assets/loading.gif',
+                          image:
+                              'https://image.tmdb.org/t/p/w342${movie.posterPath}',
+                          fit: BoxFit.cover,
+                        )
+                        : Icon(Icons.movie, size: 100),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                movie.title,
+                style: TextStyle(fontWeight: FontWeight.bold),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
