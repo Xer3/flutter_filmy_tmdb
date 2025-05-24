@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'about_screen.dart';
 import 'settings_screen.dart';
+import 'splash_screen.dart';
+import 'start_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -38,7 +40,7 @@ class _MyAppState extends State<MyApp> {
       ),
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       routes: {'/about': (context) => AboutScreen()},
-      home: HomeScreen(
+      home: SplashScreen(
         isDarkMode: isDarkMode,
         onThemeChanged: (value) {
           setState(() {
