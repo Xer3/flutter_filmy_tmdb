@@ -11,9 +11,17 @@ class MovieDetailsPage extends StatelessWidget {
     final url = 'https://www.themoviedb.org/movie/${movie.id}';
     final uri = Uri.parse(url);
 
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
+    try {
+      final canLaunchResult = await canLaunchUrl(uri);
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!canLaunchResult || !launched) {
+        throw 'launchUrl failed';
+      }
+    } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Nie można otworzyć linku: $url')));
